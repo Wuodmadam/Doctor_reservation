@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clinic Booking</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #0f766e;
+        --primary-dark: #115e59;
+        --accent: #dbeafe;
+        --text: #172033;
+        --muted: #5b6475;
+        --danger: #b91c1c;
+        --success: #15803d;
+        --border: #e5e7eb;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #edf6f5 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+
+      .brand {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+      }
+
+      .button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+
+      .button.secondary {
+        background: white;
+        color: var(--primary-dark);
+        border: 1px solid var(--border);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+      }
+
+      .sidebar {
+        padding: 22px;
+      }
+
+      .section-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.76rem;
+        color: var(--muted);
+        margin-bottom: 12px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      input, select {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 1rem;
+        margin-top: 6px;
+        background: white;
+      }
+
+      .field {
+        margin-bottom: 18px;
+      }
+
+      .main {
+        padding: 24px;
+      }
+
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .hero h2 {
+        margin: 0;
+        font-size: 1.7rem;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .slot {
+        padding: 14px 12px;
+        background: var(--accent);
+        border: 1px solid #c7ddff;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--primary-dark);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .slot:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.08);
+      }
+
+      .slot.selected {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .status {
+        margin-top: 16px;
+        min-height: 24px;
+        font-size: 0.95rem;
+      }
+
+      .status.error { color: var(--danger); }
+      .status.success { color: var(--success); }
+
+      .appointments {
+        margin-top: 28px;
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+      }
+
+      .appt-list {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .appt-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        background: #fafafa;
+      }
+
+      .appt-info strong { display: block; }
+      .appt-actions { display: flex; gap: 8px; }
+      .tag {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 760px) {
+        .grid { grid-template-columns: 1fr; }
+        .hero { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">Clinic Booking</div>
+        <button id="seedBtn" class="button secondary">Load demo data</button>
+      </div>
+
+      <div class="grid">
+        <aside class="panel sidebar">
+          <div class="section-label">Patient</div>
+
+          <div class="field">
+            <label for="patientName">Name</label>
+            <input id="patientName" type="text" value="Jane Smith" />
+          </div>
+
+          <div class="field">
+            <label for="patientEmail">Email</label>
+            <input id="patientEmail" type="email" value="jane@example.com" />
+          </div>
+
+          <div class="field">
+            <label for="patientPhone">Phone</label>
+            <input id="patientPhone" type="text" value="555-0100" />
+          </div>
+
+          <button id="createPatientBtn" class="button" style="width:100%;">Create patient</button>
+
+          <div style="margin-top: 26px;">
+            <div class="section-label">Doctor</div>
+            <div class="field">
+              <label for="doctorId">Select doctor</label>
+              <select id="doctorId"></select>
+            </div>
+            <div class="field">
+              <label for="dateInput">Date</label>
+              <input id="dateInput" type="date" />
+            </div>
+            <button id="loadAvailabilityBtn" class="button" style="width:100%;">Check availability</button>
+          </div>
+        </aside>
+
+        <main class="panel main">
+          <div class="hero">
+            <h2>Available appointments</h2>
+            <div id="selectedDoctorName" class="meta">Choose a doctor</div>
+          </div>
+
+          <div id="slots" class="slots"></div>
+          <div id="status" class="status"></div>
+
+          <div class="appointments">
+            <div class="section-label">Booked appointments</div>
+            <ul id="appointments" class="appt-list"></ul>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        doctors: [],
+        patients: [],
+        selectedDoctorId: null,
+        selectedSlot: null,
+        appointments: []
+      };
+
+      const doctorIdEl = document.getElementById('doctorId');
+      const dateInputEl = document.getElementById('dateInput');
+      const slotsEl = document.getElementById('slots');
+      const statusEl = document.getElementById('status');
+      const appointmentsEl = document.getElementById('appointments');
+      const selectedDoctorNameEl = document.getElementById('selectedDoctorName');
+
+      function setStatus(message, kind = '') {
+        statusEl.textContent = message;
+        statusEl.className = `status ${kind}`.trim();
+      }
+
+      async function api(path, options = {}) {
+        const defaultHeaders = { 'Content-Type': 'application/json' };
+        const response = await fetch(path, {
+          ...options,
+          headers: {
+            ...(options.headers || {}),
+            ...(options.body ? defaultHeaders : {})
+          }
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.detail || 'Request failed');
+        }
+        return data;
+      }
+
+      function formatDateTime(value) {
+        const d = new Date(value);
+        return d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+      }
+
+      async function seedDemo() {
+        try {
+          const data = await api('/seed-demo', { method: 'POST' });
+          await loadDoctors();
+          state.selectedDoctorId = data.doctor.id;
+          doctorIdEl.value = String(state.selectedDoctorId);
+          selectedDoctorNameEl.textContent = `Dr. ${data.doctor.name}`;
+          if (!dateInputEl.value) {
+            const today = new Date();
+            today.setDate(today.getDate() + 1);
+            dateInputEl.value = today.toISOString().slice(0, 10);
+          }
+          await loadAvailability();
+          setStatus('Demo patient and doctor ready.', 'success');
+        } catch (err) {
+          setStatus(err.message, 'error');
+        }
+      }
+
+      async function loadDoctors() {
+        const doctors = await api('/doctors');
+        state.doctors = doctors;
+        doctorIdEl.innerHTML = doctors.map(doc => `<option value="${doc.id}">${doc.name} - ${doc.specialty || 'General'}</option>`).join('');
+        if (doctors.length) {
+          state.selectedDoctorId = doctors[0].id;
+          doctorIdEl.value = String(state.selectedDoctorId);
+          selectedDoctorNameEl.textContent = doctors[0].name;
+        }
+      }
+
+      async function createPatient() {
+        const name = document.getElementById('patientName').value.trim();
+        const email = document.getElementById('patientEmail').value.trim();
+        const phone = document.getElementById('patientPhone').value.trim();
+        if (!name) {
+          setStatus('Please enter a patient name.', 'error');
+          return;
+        }
+
+        try {
+          const patient = await api('/patients', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, phone })
+          });
+          state.patients.push(patient);
+          setStatus(`Patient created: ${patient.name}`, 'success');
+        } catch (err) {
+          setStatus(err.message, 'error');
+        }
+      }
+
+      async function loadAvailability() {
+        const doctorId = Number(doctorIdEl.value);
+        const date = dateInputEl.value;
+        if (!doctorId || !date) {
+          setStatus('Select a doctor and date.', 'error');
+          return;
+        }
+
+        state.selectedDoctorId = doctorId;
+        const doctor = state.doctors.find(d => Number(d.id) === doctorId);
+        selectedDoctorNameEl.textContent = doctor ? doctor.name : 'Doctor';
+
+        try {
+          const data = await api(`/doctors/${doctorId}/availability?date=${encodeURIComponent(date)}`);
+          state.selectedSlot = null;
+          renderSlots(data.slots || []);
+          if (!data.slots.length) {
+            setStatus('No available slots for this day.', 'error');
+          } else {
+            setStatus(`${data.slots.length} slots available.`, 'success');
+          }
+        } catch (err) {
+          setStatus(err.message, 'error');
+        }
+      }
+
+      function renderSlots(slots) {
+        slotsEl.innerHTML = '';
+        if (!slots.length) {
+          slotsEl.innerHTML = '<div class="meta">No slots available.</div>';
+          return;
+        }
+
+        slots.forEach(slot => {
+          const button = document.createElement('button');
+          button.className = 'slot';
+          button.type = 'button';
+          button.textContent = formatDateTime(slot.start);
+          button.addEventListener('click', () => {
+            state.selectedSlot = slot;
+            document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
+            button.classList.add('selected');
+          });
+          slotsEl.appendChild(button);
+        });
+      }
+
+      async function bookSelectedSlot() {
+        const patientName = document.getElementById('patientName').value.trim();
+        if (!state.selectedSlot) {
+          setStatus('Select a slot first.', 'error');
+          return;
+        }
+        if (!patientName) {
+          setStatus('Please fill in a patient name.', 'error');
+          return;
+        }
+
+        try {
+          const patient = state.patients.find(p => p.name.toLowerCase() === patientName.toLowerCase()) || null;
+          const payload = {
+            doctor_id: Number(state.selectedDoctorId),
+            patient_id: patient ? patient.id : 1,
+            start_at: state.selectedSlot.start
+          };
+
+          const result = await api('/appointments', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+
+          setStatus(`Booked successfully for ${formatDateTime(result.start_at)}`, 'success');
+          await loadAvailability();
+          await loadAppointments();
+        } catch (err) {
+          setStatus(err.message, 'error');
+        }
+      }
+
+      async function loadAppointments() {
+        const doctors = state.doctors;
+        const doctorId = state.selectedDoctorId || (doctors[0] && doctors[0].id);
+        if (!doctorId) {
+          appointmentsEl.innerHTML = '<li class="meta">No appointments yet.</li>';
+          return;
+        }
+
+        try {
+          const all = await api('/doctors');
+          const doctor = all.find(d => Number(d.id) === Number(doctorId));
+          const patient = state.patients[0] || { name: 'Jane Smith' };
+
+          appointmentsEl.innerHTML = `
+            <li class="appt-item">
+              <div class="appt-info">
+                <strong>${doctor ? doctor.name : 'Doctor'}</strong>
+                <span>${patient.name}</span>
+              </div>
+              <div class="appt-actions">
+                <span class="tag">Booked</span>
+              </div>
+            </li>
+          `;
+        } catch {
+          appointmentsEl.innerHTML = '<li class="meta">Unable to load appointments.</li>';
+        }
+      }
+
+      document.getElementById('loadAvailabilityBtn').addEventListener('click', loadAvailability);
+      document.getElementById('createPatientBtn').addEventListener('click', createPatient);
+      document.getElementById('seedBtn').addEventListener('click', seedDemo);
+      document.getElementById('slots').addEventListener('click', (event) => {
+        const slot = event.target.closest('.slot');
+        if (!slot) return;
+        const selected = slot.textContent;
+        const slotStart = selected && selected.length ? selected : null;
+        if (slotStart) {
+          bookSelectedSlot();
+        }
+      });
+
+      async function init() {
+        const today = new Date();
+        today.setDate(today.getDate() + 1);
+        dateInputEl.value = today.toISOString().slice(0, 10);
+        await loadDoctors();
+        await loadAvailability();
+        await loadAppointments();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
